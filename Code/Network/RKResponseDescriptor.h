@@ -1,3 +1,4 @@
+
 //
 //  RKResponseDescriptor.h
 //  RestKit
@@ -70,6 +71,24 @@
                                       keyPath:(NSString *)keyPath
                                   statusCodes:(NSIndexSet *)statusCodes;
 
+/**
+ Creates and returns a new `RKResponseDescriptor` object.
+ 
+ @param mapping The mapping for the response descriptor.
+ @param method The HTTP method(s) for which the mapping is to be used.
+ @param pathPattern A path pattern that matches against URLs for which the mapping should be used.
+ @param keyPath A key path specifying the subset of the parsed response for which the mapping is to be used.
+ @param parameters A list of the parameters on the request which the mapping is to be used.
+ @param statusCodes A set of HTTP status codes for which the mapping is to be used.
+ @return A new `RKResponseDescriptor` object.
+ */
++ (instancetype)responseDescriptorWithMapping:(RKMapping *)mapping
+                                       method:(RKRequestMethod)method
+                                  pathPattern:(NSString *)pathPattern
+                                   parameters:(NSDictionary *)parameters
+                                      keyPath:(NSString *)keyPath
+                                  statusCodes:(NSIndexSet *)statusCodes;
+
 ///------------------------------------------------------
 /// @name Getting Information About a Response Descriptor
 ///------------------------------------------------------
@@ -90,6 +109,13 @@
  @see `RKPathMatcher`
  */
 @property (nonatomic, copy, readonly) NSString *pathPattern;
+
+/**
+ The path pattern to match against the request URL. If nil, the response descriptor matches any URL.
+ 
+ @see `RKPathMatcher`
+ */
+@property (nonatomic, copy, readonly) NSDictionary *parameters;
 
 /**
  The key path to match against the deserialized response body. If nil, the response descriptor matches the entire response body.
@@ -124,14 +150,26 @@
 
 /**
  Returns a Boolean value that indicates if the receiver's path pattern matches the given path.
-
+ 
  Path matching is performed using an `RKPathMatcher` object. If the receiver has a `nil` path pattern or the given path is `nil`, `YES` is returned.
-
+ 
  @param path The path to compare with the path pattern of the receiver.
  @return `YES` if the path matches the receiver's pattern, else `NO`.
  @see `RKPathMatcher`
  */
 - (BOOL)matchesPath:(NSString *)path;
+
+/**
+ Returns a Boolean value that indicates if the receiver's path pattern matches the given path.
+
+ Path matching is performed using an `RKPathMatcher` object. If the receiver has a `nil` path pattern or the given path is `nil`, `YES` is returned.
+
+ @param path The path to compare with the path pattern of the receiver.
+ @param parameters The parameters to comprae with the paramaters patters of the receuver.
+ @return `YES` if the path matches the receiver's pattern, else `NO`.
+ @see `RKPathMatcher`
+ */
+- (BOOL)matchesPath:(NSString *)path andParameters:(NSDictionary*)parameters;
 
 /**
  Returns a Boolean value that indicates if the given URL object matches the base URL and path pattern of the receiver.

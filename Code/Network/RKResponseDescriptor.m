@@ -65,6 +65,7 @@ extern NSString *RKStringDescribingRequestMethod(RKRequestMethod method);
 @property (nonatomic, copy, readwrite) NSString *pathPattern;
 @property (nonatomic, strong, readwrite) RKPathMatcher *pathPatternMatcher;
 @property (nonatomic, copy, readwrite) NSString *keyPath;
+@property (nonatomic, copy, readwrite) NSDictionary *parameters;
 @property (nonatomic, copy, readwrite) NSIndexSet *statusCodes;
 @end
 
@@ -98,6 +99,24 @@ extern NSString *RKStringDescribingRequestMethod(RKRequestMethod method);
     return mappingDescriptor;
 }
 
++ (instancetype)responseDescriptorWithMapping:(RKMapping *)mapping
+                                       method:(RKRequestMethod)method
+                                  pathPattern:(NSString *)pathPattern
+                                   parameters:(NSDictionary *)parameters
+                                      keyPath:(NSString *)keyPath
+                                  statusCodes:(NSIndexSet *)statusCodes
+{
+    NSParameterAssert(mapping);
+    RKResponseDescriptor *mappingDescriptor = [RKResponseDescriptor responseDescriptorWithMapping:mapping
+                                                                                           method:method
+                                                                                      pathPattern:pathPattern
+                                                                                          keyPath:keyPath
+                                                                                      statusCodes:statusCodes];
+    mappingDescriptor.parameters = parameters;
+    
+    return mappingDescriptor;
+}
+
 - (void)setPathPattern:(NSString *)pathPattern
 {
     _pathPattern = pathPattern;
@@ -110,14 +129,31 @@ extern NSString *RKStringDescribingRequestMethod(RKRequestMethod method);
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p method=%@ pathPattern=%@ keyPath=%@ statusCodes=%@ : %@>",
-            NSStringFromClass([self class]), self, RKStringDescribingRequestMethod(self.method), self.pathPattern, self.keyPath, self.statusCodes ? RKStringFromIndexSet(self.statusCodes) : self.statusCodes, self.mapping];
+    return [NSString stringWithFormat:@"<%@: %p method=%@ pathPattern=%@ parameters=%@ keyPath=%@ statusCodes=%@ : %@>",
+            NSStringFromClass([self class]), self, RKStringDescribingRequestMethod(self.method), self.pathPattern, self.parameters, self.keyPath, self.statusCodes ? RKStringFromIndexSet(self.statusCodes) : self.statusCodes, self.mapping];
 }
 
 - (BOOL)matchesPath:(NSString *)path
 {
     if (!self.pathPattern || !path) return YES;
     return [self.pathPatternMatcher matchesPath:path tokenizeQueryStrings:NO parsedArguments:nil];
+}
+
+- (BOOL)matchesPath:(NSString *)path andParameters:(NSDictionary *)parameters
+{
+    BOOL matchPath = [self matchesPath:path];
+    if (matchPath) {
+        if (parameters && self.parameters) {
+            BOOL dictionaryEquals = [self.parameters isEqualToDictionary:parameters];
+            return dictionaryEquals;
+        }
+        else {
+            return YES;
+        }
+    }
+    else {
+        return NO;
+    }
 }
 
 - (BOOL)matchesURL:(NSURL *)URL

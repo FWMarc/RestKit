@@ -67,10 +67,10 @@ static RKObjectManager  *sharedManager = nil;
  @return An `NSArray` object whose elements are `RKResponseDescriptor` objects matching the given path and method.
  */
 #ifdef RKCoreDataIncluded
-static NSArray *RKFilteredArrayOfResponseDescriptorsMatchingPathAndMethod(NSArray *responseDescriptors, NSString *path, RKRequestMethod method)
+static NSArray *RKFilteredArrayOfResponseDescriptorsMatchingPathAndMethod(NSArray *responseDescriptors, NSString *path, RKRequestMethod method, NSDictionary *paramaters)
 {
     NSIndexSet *indexSet = [responseDescriptors indexesOfObjectsPassingTest:^BOOL(RKResponseDescriptor *responseDescriptor, NSUInteger idx, BOOL *stop) {
-        return [responseDescriptor matchesPath:path] && (method & responseDescriptor.method);
+        return [responseDescriptor matchesPath:path andParameters:paramaters] && (method & responseDescriptor.method);
     }];
     return [responseDescriptors objectsAtIndexes:indexSet];
 }
@@ -633,7 +633,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFHTTPClientParamet
     }
     
 #ifdef RKCoreDataIncluded
-    NSArray *matchingDescriptors = RKFilteredArrayOfResponseDescriptorsMatchingPathAndMethod(self.responseDescriptors, path, method);
+    NSArray *matchingDescriptors = RKFilteredArrayOfResponseDescriptorsMatchingPathAndMethod(self.responseDescriptors, path, method, parameters);
     BOOL containsEntityMapping = RKDoesArrayOfResponseDescriptorsContainEntityMapping(matchingDescriptors);
     BOOL isManagedObjectRequestOperation = (containsEntityMapping || [object isKindOfClass:[NSManagedObject class]]);
     
